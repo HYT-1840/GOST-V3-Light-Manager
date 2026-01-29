@@ -40,7 +40,7 @@ chmod +x gost-manager-master.sh
 二、被控节点部署（代理节点）
 
 # 下载脚本并赋予执行权限
-wget -q https://raw.githubusercontent.com/你的用户名/仓库名/main/gost-manager-node.sh -O gost-manager-node.sh
+wget -q https://raw.githubusercontent.com/HYT-1840/GOST-V3-Light-Manager/main/gost-manager-node.sh -O gost-manager-node.sh
 chmod +x gost-manager-node.sh
 
 # 运行脚本
