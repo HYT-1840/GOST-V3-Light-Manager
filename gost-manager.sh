@@ -141,8 +141,8 @@ install_master() {
 
     # 步骤6：生成GOST配置文件和Systemd服务
     log_step "步骤6/7：生成GOST配置文件和Systemd服务配置"
-    log_exec "生成GOST主配置文件：${MASTER_DIR}/config.yaml（完整版，含密钥+TLS证书）"
-# 生成包含认证密钥、TLS证书、所有核心端口的完整配置
+   log_exec "生成GOST主配置文件：${MASTER_DIR}/config.yaml（双栈版：IPv4+IPv6同时监听）"
+# 双栈配置：0.0.0.0:端口 自动监听IPv4+IPv6，保留所有核心功能
 cat > ${MASTER_DIR}/config.yaml <<EOF
 log:
   level: info
@@ -150,32 +150,32 @@ log:
   max-size: ${LOG_MAX_SIZE}M
   max-age: ${LOG_MAX_AGE}d
 
-# 核心认证配置（使用当前生成的16位密钥）
+# 核心认证配置（脚本自动生成的密钥，无需手动修改）
 auth:
   - username: gost
     password: ${AUTH_KEY}
     type: basic
 
-# gRPC服务配置（关联TLS证书，加密通信）
+# gRPC双栈监听：0.0.0.0:50051 同时绑定IPv4+IPv6，关联TLS证书
 grpc:
-  addr: :${GRPC_PORT}
+  addr: 0.0.0.0:${GRPC_PORT}
   tls:
     cert: ${MASTER_DIR}/cert.pem
     key: ${MASTER_DIR}/key.pem
 
-# 内置API服务配置（Nginx反向代理依赖）
+# API双栈监听：0.0.0.0:8000 同时绑定IPv4+IPv6（Nginx反向代理依赖）
 api:
-  addr: :8000
+  addr: 0.0.0.0:8000
 
-# 控制面板配置（适配官方UI反向代理）
+# 控制面板配置：适配双栈反向代理，关联官方UI
 dashboard:
-  addr: :8000
+  addr: 0.0.0.0:8000
   path: /
 EOF
 # 修复配置文件权限，确保GOST可正常读取
 chmod 644 ${MASTER_DIR}/config.yaml
 chown root:root ${MASTER_DIR}/config.yaml
-log_ok "GOST配置文件生成完成（完整含密钥+TLS证书，已修复权限）"
+log_ok "GOST配置文件生成完成（双栈版，已修复权限）"
 
 log_exec "生成Systemd服务文件：/etc/systemd/system/${MASTER_SERVICE}.service（终极版，防Bad message）"
 # 第一步：清理残留文件+不可见字符，避免缓存干扰
