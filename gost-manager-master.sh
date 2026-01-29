@@ -4,8 +4,8 @@ set -euo pipefail
 # 说明：恢复常用默认配置，移除过激资源限制，增强日志时间戳与可读性
 
 # ==================== 核心配置（可直接修改）====================
-GRPC_PORT="63888"
-HTTP_PORT="63880"  # 面板端口 63880
+GRPC_PORT="50051"
+HTTP_PORT="63880"  # 自定义端口：63880
 GOST_MASTER_DIR="/usr/local/gost-master"
 NGINX_HTML_DIR="/usr/share/nginx/html/gost-panel"
 SERVICE_NAME="gost-master"
@@ -250,7 +250,7 @@ EOF
         echo -e "\n${GREEN_COLOR}===== 主控端核心信息 =====${RESET_COLOR}"
         echo -e "本机IP：$(get_ip)"
         echo -e "面板地址：http://<主控IP>:${HTTP_PORT}"
-        echo -e "gRPC端口：${GRPC_PORT}（被控节点连接用）"
+        echo -e "gRPC端口：${GRPC_PORT}（被控节点连��用）"
         echo -e "默认随机密钥：${RAND_KEY}（建议保存，被控节点使用）"
         echo -e "数据库路径：${GOST_MASTER_DIR}/data/gost-master.db"
         echo -e "${GREEN_COLOR}=========================${RESET_COLOR}"
