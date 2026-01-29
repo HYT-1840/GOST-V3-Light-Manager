@@ -23,7 +23,7 @@ GOST V3 Light Manager 🚀
 一、主控端部署（管理节点）
 
 # 下载脚本并赋予执行权限
-wget -q https://raw.githubusercontent.com/你的用户名/仓库名/main/gost-manager-master.sh -O gost-manager-master.sh
+wget -q https://raw.githubusercontent.com/HYT-1840/GOST-V3-Light-Manager/main/gost-manager-master.sh -O gost-manager-master.sh
 chmod +x gost-manager-master.sh
 
 # 运行脚本（无需提前安装依赖，脚本自动处理）
