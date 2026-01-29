@@ -158,18 +158,45 @@ EOF
 EOF
     log_ok "Systemd服务配置生成完成"
 
-    # 步骤7：配置Nginx反向代理（面板访问）
-    log_step "步骤7/7：配置Nginx反向代理（面板端口${HTTP_PORT}）"
-    log_exec "生成Nginx配置文件：/etc/nginx/nginx.conf"
-    cat > /etc/nginx/nginx.conf <<EOF
-user root; worker_processes auto; events { worker_connections 1024; }
-http { include mime.types; default_type application/octet-stream; sendfile on;
-server { listen ${HTTP_PORT}; root ${MASTER_DIR}; index index.html;
-location /api/ { proxy_pass http://127.0.0.1:8000/api/; proxy_set_header X-Real-IP \$remote_addr; }}}
+    log_step "步骤7/7：配置Nginx反向代理（面板端口8080）- 代理官方新UI https://ui.gost.run/"
+log_exec "生成Nginx配置文件：/etc/nginx/nginx.conf（反向代理官方UI，无需本地下载）"
+# 配置Nginx反向代理官方最新UI，彻底解决面板404问题
+cat > /etc/nginx/nginx.conf <<EOF
+user root;
+worker_processes auto;
+events {
+    worker_connections 1024;
+}
+http {
+    include mime.types;
+    default_type application/octet-stream;
+    sendfile on;
+    server {
+        listen ${HTTP_PORT};
+        server_name _;
+        # 反向代理GOST官方最新UI地址
+        location / {
+            proxy_pass https://ui.gost.run/;
+            proxy_set_header Host ui.gost.run;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto \$scheme;
+            proxy_redirect off;
+            proxy_buffering off;
+        }
+        # 反向代理GOST主控内置API
+        location /api/ {
+            proxy_pass http://127.0.0.1:8000/api/;
+            proxy_set_header Host \$host;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        }
+    }
+}
 EOF
-    log_exec "下载GOST面板页面：${MASTER_DIR}/index.html"
-    wget --timeout=20 https://gost.run/static/panel/index.html -O ${MASTER_DIR}/index.html
-    log_ok "Nginx配置完成，面板页面下载完成"
+# 重启Nginx使配置生效
+systemctl restart nginx
+log_ok "Nginx配置完成（反向代理官方新UI），无需本地下载面板文件"
 
     # 启动服务并开放端口
     log_step "========== 启动GOST主控端并配置开机自启 =========="
