@@ -4,8 +4,8 @@ set -euo pipefail
 # 说明：恢复常用默认配置，移除过激资源限制，增强日志时间戳与可读性
 
 # ==================== 核心配置（可直接修改）====================
-GRPC_PORT="50051"
-HTTP_PORT="80"  # 恢复常用默认端口 80
+GRPC_PORT="63888"
+HTTP_PORT="63880"  # 面板端口 63880
 GOST_MASTER_DIR="/usr/local/gost-master"
 NGINX_HTML_DIR="/usr/share/nginx/html/gost-panel"
 SERVICE_NAME="gost-master"
