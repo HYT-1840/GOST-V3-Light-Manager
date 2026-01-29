@@ -150,13 +150,31 @@ control: {enabled: true, auth: true}
 EOF
     log_ok "GOST配置文件生成完成"
 
-    log_exec "生成Systemd服务文件：/etc/systemd/system/${MASTER_SERVICE}.service"
-    cat > /etc/systemd/system/${MASTER_SERVICE}.service <<EOF
-[Unit] Description=GOST Master After=network.target nginx.service
-[Service] Type=simple ExecStart=${MASTER_DIR}/gost -C ${MASTER_DIR}/config.yaml Restart=on-failure RestartSec=3 LimitNOFILE=${MAX_OPEN_FILES}
-[Install] WantedBy=multi-user.target
+    log_exec "生成Systemd服务文件：/etc/systemd/system/${MASTER_SERVICE}.service（标准语法，无格式错误）"
+# 生成符合systemd规范的服务文件，避免Bad message错误
+cat > /etc/systemd/system/${MASTER_SERVICE}.service <<EOF
+[Unit]
+Description=GOST Master Service
+After=network.target nginx.service
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=${MASTER_DIR}/gost -C ${MASTER_DIR}/config.yaml
+Restart=on-failure
+RestartSec=3s
+LimitNOFILE=${MAX_OPEN_FILES}
+User=root
+Group=root
+WorkingDirectory=${MASTER_DIR}/
+
+[Install]
+WantedBy=multi-user.target
 EOF
-    log_ok "Systemd服务配置生成完成"
+# 修复服务文件权限（systemd标准要求）
+chmod 644 /etc/systemd/system/${MASTER_SERVICE}.service
+chown root:root /etc/systemd/system/${MASTER_SERVICE}.service
+log_ok "Systemd服务配置生成完成（标准合法，已修复权限）"
 
     log_step "步骤7/7：配置Nginx反向代理（面板端口8080）- 代理官方新UI https://ui.gost.run/"
 log_exec "生成Nginx配置文件：/etc/nginx/nginx.conf（反向代理官方UI，无需本地下载）"
