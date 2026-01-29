@@ -131,8 +131,8 @@ install_master() {
     AUTH_KEY=$(head -c 16 /dev/urandom | xxd -p | head -c 16)
     log_ok "成功生成认证密钥：${AUTH_KEY}（请妥善保存，被控端需使用）"
     
-    log_exec "执行命令：${MASTER_DIR}/gost cert -gen -out ${MASTER_DIR}/cert.pem -key ${MASTER_DIR}/key.pem"
-    ${MASTER_DIR}/gost cert -gen -out ${MASTER_DIR}/cert.pem -key ${MASTER_DIR}/key.pem
+    log_exec "执行命令：用OpenSSL生成TLS证书（替代GOST原生命令，无兼容问题）"
+    openssl req -x509 -newkey rsa:2048 -nodes -days 365 -keyout ${MASTER_DIR}/key.pem -out ${MASTER_DIR}/cert.pem -subj "/CN=gost.local"
     if [ ! -f "${MASTER_DIR}/cert.pem" ] || [ ! -f "${MASTER_DIR}/key.pem" ]; then
         log_err "TLS证书生成失败！"
         return 1
