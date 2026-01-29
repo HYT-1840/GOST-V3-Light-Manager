@@ -1,4 +1,4 @@
-GOST V3 轻量主控+被控 交互式管理脚本（MD格式）
+##GOST V3 轻量主控+被控 交互式管理脚本（AI手搓版 2026.1.29）
 
 # GOST V3 Light Manager 🚀
 
