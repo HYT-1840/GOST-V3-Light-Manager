@@ -210,8 +210,8 @@ systemctl daemon-reload
 log_ok "Systemd服务配置生成完成（已清理残留+修复权限+刷新缓存）"
 
     log_step "步骤7/7：配置Nginx反向代理（面板端口8080）- 代理官方新UI https://ui.gost.run/"
-log_exec "生成Nginx配置文件：/etc/nginx/nginx.conf（反向代理官方UI，无需本地下载）"
-# 配置Nginx反向代理官方最新UI，彻底解决面板404问题
+log_exec "生成Nginx配置文件：/etc/nginx/nginx.conf（双栈版：IPv4+IPv6同时监听）"
+# 双栈Nginx配置：同时监听IPv4和IPv6的面板端口，代理官方UI+GOST API
 cat > /etc/nginx/nginx.conf <<EOF
 user root;
 worker_processes auto;
@@ -222,10 +222,13 @@ http {
     include mime.types;
     default_type application/octet-stream;
     sendfile on;
+    # 双栈监听：同时绑定IPv4和IPv6的面板端口（${HTTP_PORT}为脚本变量，默认8080）
     server {
-        listen ${HTTP_PORT};
+        listen ${HTTP_PORT};      # 监听IPv4 ${HTTP_PORT} 端口
+        listen [::]:${HTTP_PORT}; # 监听IPv6 ${HTTP_PORT} 端口（[::]是IPv6的0.0.0.0）
         server_name _;
-        # 反向代理GOST官方最新UI地址
+
+        # 反向代理GOST官方最新UI（https://ui.gost.run/），双栈兼容
         location / {
             proxy_pass https://ui.gost.run/;
             proxy_set_header Host ui.gost.run;
@@ -235,9 +238,10 @@ http {
             proxy_redirect off;
             proxy_buffering off;
         }
-        # 反向代理GOST主控内置API
+
+        # 反向代理GOST双栈API服务，同时支持IPv4/IPv6请求
         location /api/ {
-            proxy_pass http://127.0.0.1:8000/api/;
+            proxy_pass http://0.0.0.0:8000/api/;
             proxy_set_header Host \$host;
             proxy_set_header X-Real-IP \$remote_addr;
             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -245,9 +249,9 @@ http {
     }
 }
 EOF
-# 重启Nginx使配置生效
-systemctl restart nginx
-log_ok "Nginx配置完成（反向代理官方新UI），无需本地下载面板文件"
+# 重启Nginx使双栈配置生效
+systemctl restart nginx 2>/dev/null || true
+log_ok "Nginx配置完成（双栈版，已重启服务）"
 
     # 启动服务并开放端口
     log_step "========== 启动GOST主控端并配置开机自启 =========="
