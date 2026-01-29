@@ -150,8 +150,10 @@ control: {enabled: true, auth: true}
 EOF
     log_ok "GOST配置文件生成完成"
 
-    log_exec "生成Systemd服务文件：/etc/systemd/system/${MASTER_SERVICE}.service（标准语法，无格式错误）"
-# 生成符合systemd规范的服务文件，避免Bad message错误
+log_exec "生成Systemd服务文件：/etc/systemd/system/${MASTER_SERVICE}.service（终极版，防Bad message）"
+# 第一步：清理残留文件+不可见字符，避免缓存干扰
+rm -rf /etc/systemd/system/${MASTER_SERVICE}.service 2>/dev/null || true
+# 第二步：生成绝对标准的systemd服务文件（分段分行，无任何格式问题）
 cat > /etc/systemd/system/${MASTER_SERVICE}.service <<EOF
 [Unit]
 Description=GOST Master Service
@@ -167,14 +169,18 @@ LimitNOFILE=${MAX_OPEN_FILES}
 User=root
 Group=root
 WorkingDirectory=${MASTER_DIR}/
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
 EOF
-# 修复服务文件权限（systemd标准要求）
+# 第三步：修复systemd标准权限（强制644，root:root，不可修改）
 chmod 644 /etc/systemd/system/${MASTER_SERVICE}.service
 chown root:root /etc/systemd/system/${MASTER_SERVICE}.service
-log_ok "Systemd服务配置生成完成（标准合法，已修复权限）"
+# 第四步：提前刷新systemd缓存，避免后续启用失败
+systemctl daemon-reload
+log_ok "Systemd服务配置生成完成（已清理残留+修复权限+刷新缓存）"
 
     log_step "步骤7/7：配置Nginx反向代理（面板端口8080）- 代理官方新UI https://ui.gost.run/"
 log_exec "生成Nginx配置文件：/etc/nginx/nginx.conf（反向代理官方UI，无需本地下载）"
