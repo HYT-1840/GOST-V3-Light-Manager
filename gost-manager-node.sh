@@ -12,7 +12,7 @@ set -euo pipefail
 # ==================== 基础配置（恢复正常资源占用，与主控同步）====================
 SERVICE_NAME="gost-node"
 GOST_NODE_DIR="/usr/local/gost-node"
-MASTER_GRPC=""          # 主控端gRPC地址（格式：IP:50051）
+MASTER_GRPC=""          # 主控端gRPC地址（格式：IP:端口）
 AUTH_KEY=""             # 主控端认证密钥（需与主控一致）
 ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')
 # 颜色定义（保持输出）
