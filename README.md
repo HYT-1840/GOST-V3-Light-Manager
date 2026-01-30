@@ -20,19 +20,19 @@
 
 ## 🚀 快速部署
 
-### 一、主控端部署（管理节点）
+### 一、部署（管理节点）
 
 ```bash
 
 # 下载脚本并赋予执行权限
 
-wget -q https://raw.githubusercontent.com/HYT-1840/GOST-V3-Light-Manager/main/gost-manager-master.sh -O gost-manager-master.sh
+wget -q https://raw.githubusercontent.com/HYT-1840/GOST-V3-Light-Manager/main/gost-manager.sh -O gost-manager.sh
 
-chmod +x gost-manager-master.sh
+chmod +x gost-manager.sh
 
 # 运行脚本（无需提前安装依赖，脚本自动处理）
 
-./gost-manager-master.sh
+./gost-manager.sh
 
 ```
 
@@ -44,21 +44,7 @@ chmod +x gost-manager-master.sh
 
 - 随机认证密钥（建议保存，被控节点需一致）
 
-### 二、被控节点部署（代理节点）
 
-```bash
-
-# 下载脚本并赋予执行权限
-
-wget -q https://raw.githubusercontent.com/HYT-1840/GOST-V3-Light-Manager/main/gost-manager-node.sh -O gost-manager-node.sh
-
-chmod +x gost-manager-node.sh
-
-# 运行脚本
-
-./gost-manager-node.sh
-
-```
 
 执行后选择 **选项1** ，按提示输入：
 
@@ -68,61 +54,6 @@ chmod +x gost-manager-node.sh
 
 安装完成后，可在主控端面板查看节点在线状态。
 
-## 📋 功能菜单说明
-
-### 主控端脚本（12项核心功能）
-
-| 选项 | 功能描述 |
-
-|------|----------|
-
-| 1    | 安装主控端（自动最新版+端口检测+随机密钥） |
-
-| 2-4  | 启动/停止/重启主控端服务 |
-
-| 5    | 查看运行状态（服务状态+IP+配置信息） |
-
-| 6    | 查看实时日志（排错用） |
-
-| 7    | 修改核心配置（gRPC/面板端口） |
-
-| 8    | 卸载主控端（需输入uninstall验证，彻底清理） |
-
-| 9    | 配置备份/恢复（含配置文件+SQLite数据库） |
-
-| 10   | 一键生成排错日志（快速定位问题） |
-
-| 11   | 检测端口连通性（本机核心端口+监听状态） |
-
-| 12   | 优化SQLite数据库（碎片清理+体积压缩） |
-
-| 0    | 退出脚本 |
-
-### 被控节点脚本（11项核心功能）
-
-| 选项 | 功能描述 |
-
-|------|----------|
-
-| 1    | 安装被控节点（自动最新版+主控配置+密钥校验） |
-
-| 2-4  | 启动/停止/重启被控节点服务 |
-
-| 5    | 查看节点状态（服务状态+IP+主控配置） |
-
-| 6    | 查看实时日志（排错用） |
-
-| 7    | 重新配置主控信息（更换主控/密钥） |
-
-| 8    | 卸载被控节点（需输入uninstall验证） |
-
-| 9    | 测试主控连通性（PING+端口+服务状态三重检测） |
-
-| 10   | 一键生成排错日志（快速定位问题） |
-
-| 11   | 备份节点配置（防配置丢失） |
-
-| 0    | 退出脚本 |
 
 ## 🛠️ 关键优化说明
 
@@ -180,24 +111,6 @@ chmod +x gost-manager-node.sh
 
 - 执行对应脚本的 **选项10**（一键生成排错日志），将日志文件发送给维护者，或自行查看日志中的错误信息
 
-## 📄 许可证
 
-本项目采用 [MIT License](LICENSE) 开源，允许自由使用、修改和分发，前提是保留原作者版权声明。
-
-## 🤝 贡献指南
-
-1. Fork本仓库
-
-2. 创建特性分支（git checkout -b feature/xxx）
-
-3. 提交修改（git commit -m '添加xxx功能'）
-
-4. 推送到分支（git push origin feature/xxx）
-
-5. 提交Pull Request
-
-欢迎大家提交Issue和PR，一起优化脚本功能！
-
----
 
 
