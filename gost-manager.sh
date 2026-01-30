@@ -265,8 +265,8 @@ log_ok "Nginx配置完成（双栈版，已重启服务）"
         firewall-cmd --permanent --add-port={${GRPC_PORT},${HTTP_PORT}}/tcp
         firewall-cmd --reload
     elif [ -f /etc/debian_version ] && command -v ufw >/dev/null 2>&1; then
-        log_exec "执行命令：ufw allow ${GRPC_PORT}/tcp ${HTTP_PORT}/tcp"
-        ufw allow ${GRPC_PORT}/tcp ${HTTP_PORT}/tcp
+        log_exec "执行命令：ufw allow ${GRPC_PORT}/tcp && ufw allow ${HTTP_PORT}/tcp"
+        ufw allow ${GRPC_PORT}/tcp && ufw allow ${HTTP_PORT}/tcp
     fi
     log_ok "防火墙端口开放完成"
 
