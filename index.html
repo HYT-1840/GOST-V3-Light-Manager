@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOST V3 管理面板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background: #f5f7fa;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        .status-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            padding: 20px;
+            transition: box-shadow 0.3s;
+        }
+        .card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card .status {
+            font-size: 16px;
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .status.running {
+            background: #e8f5e9;
+            color: #2ecc71;
+        }
+        .status.stopped {
+            background: #ffebee;
+            color: #e74c3c;
+        }
+        .card .config-item {
+            margin: 8px 0;
+            font-size: 14px;
+            color: #555;
+        }
+        .card .config-item span {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .btn-success {
+            background: #2ecc71;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        .btn-danger {
+            background: #e74c3c;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        .btn-info {
+            background: #17a2b8;
+            color: #fff;
+        }
+        .btn-info:hover {
+            background: #138496;
+        }
+        .log-viewer {
+            width: 100%;
+            height: 300px;
+            background: #1e1e1e;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-y: auto;
+            font-family: "Consolas", monospace;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .log-error {
+            color: #e74c3c;
+        }
+        .log-info {
+            color: #3498db;
+        }
+        .log-success {
+            color: #2ecc71;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            font-size: 14px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1>GOST V3 轻量管理面板</h1>
+            <p>主控端/被控端一体化管理 | 实时状态监控</p>
+        </div>
+
+        <!-- 快捷操作按钮 -->
+        <div class="btn-group">
+            <button class="btn btn-success" id="startMaster">启动主控端</button>
+            <button class="btn btn-danger" id="stopMaster">停止主控端</button>
+            <button class="btn btn-primary" id="restartMaster">重启主控端</button>
+            <button class="btn btn-info" id="viewStatus">刷新状态</button>
+            <button class="btn btn-info" id="viewLog">查看运行日志</button>
+        </div>
+
+        <!-- 状态卡片 -->
+        <div class="status-card">
+            <!-- 主控端状态 -->
+            <div class="card">
+                <h3>📌 主控端状态</h3>
+                <div class="status" id="masterStatus">加载中...</div>
+                <div class="config-item"><span>gRPC端口：</span><span id="grpcPort">50051</span></div>
+                <div class="config-item"><span>面板端口：</span><span id="httpPort">8080</span></div>
+                <div class="config-item"><span>认证密钥：</span><span id="authKey">加载中...</span></div>
+                <div class="config-item"><span>安装路径：</span>/usr/local/gost-master</div>
+                <div class="config-item"><span>日志路径：</span>/usr/local/gost-master/gost-master.log</div>
+            </div>
+
+            <!-- 被控端状态 -->
+            <div class="card">
+                <h3>🖥️ 被控端状态</h3>
+                <div class="status" id="nodeStatus">未安装</div>
+                <div class="config-item"><span>关联主控：</span><span id="masterGrpc">未配置</span></div>
+                <div class="config-item"><span>安装路径：</span>/usr/local/gost-node</div>
+                <div class="config-item"><span>日志路径：</span>/usr/local/gost-node/gost-node.log</div>
+            </div>
+
+            <!-- 系统信息 -->
+            <div class="card">
+                <h3>🖧 系统信息</h3>
+                <div class="config-item"><span>本机IP：</span><span id="localIp">加载中...</span></div>
+                <div class="config-item"><span>外网IP：</span><span id="publicIp">加载中...</span></div>
+                <div class="config-item"><span>系统架构：</span><span id="sysArch">加载中...</span></div>
+                <div class="config-item"><span>最后刷新：</span><span id="refreshTime">--</span></div>
+            </div>
+        </div>
+
+        <!-- 日志查看器 -->
+        <div id="logContainer" style="display: none;">
+            <h3>📜 主控端运行日志</h3>
+            <div class="log-viewer" id="logContent"></div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="footer">
+            <p>GOST V3 轻量管理脚本 | 适配 CentOS7+/Ubuntu18+/Debian10+</p>
+        </div>
+    </div>
+
+    <script>
+        // 工具函数：获取DOM元素
+        const $ = (id) => document.getElementById(id);
+        
+        // 更新时间戳
+        const updateRefreshTime = () => {
+            const now = new Date();
+            $('refreshTime').textContent = now.toLocaleString('zh-CN');
+        };
+
+        // 1. 初始化页面：加载基础信息
+        window.onload = async () => {
+            await loadSystemInfo();
+            await loadServiceStatus();
+            updateRefreshTime();
+        };
+
+        // 2. 加载系统信息（IP、架构等）
+        async function loadSystemInfo() {
+            try {
+                // 模拟获取系统信息（实际部署需后端接口支持）
+                // 前端仅做展示，真实数据需从脚本/后端接口获取
+                const resIp = await fetch('https://ip.sb');
+                const publicIp = await resIp.text();
+                $('publicIp').textContent = publicIp.trim();
+
+                // 架构/本地IP需后端接口返回（示例值）
+                $('sysArch').textContent = `${navigator.platform} (${window.navigator.userAgent.match(/Linux|Windows|Mac/)})`;
+                $('localIp').textContent = '192.168.1.100'; // 实际需后端返回
+                
+                // 配置端口（从脚本默认值读取）
+                $('grpcPort').textContent = '50051';
+                $('httpPort').textContent = '8080';
+                $('authKey').textContent = '**********'; // 实际需后端返回（脱敏）
+            } catch (e) {
+                console.error('加载系统信息失败：', e);
+                $('publicIp').textContent = '获取失败';
+            }
+        }
+
+        // 3. 加载服务状态
+        async function loadServiceStatus() {
+            try {
+                // 模拟服务状态（实际需后端接口返回脚本执行结果）
+                // 主控端状态
+                const masterRunning = true; // 实际需判断 systemctl is-active gost-master
+                if (masterRunning) {
+                    $('masterStatus').textContent = '运行中';
+                    $('masterStatus').className = 'status running';
+                } else {
+                    $('masterStatus').textContent = '已停止';
+                    $('masterStatus').className = 'status stopped';
+                }
+
+                // 被控端状态
+                const nodeInstalled = false; // 实际需判断是否安装被控端
+                if (nodeInstalled) {
+                    const nodeRunning = false;
+                    $('nodeStatus').textContent = nodeRunning ? '运行中' : '已停止';
+                    $('nodeStatus').className = nodeRunning ? 'status running' : 'status stopped';
+                } else {
+                    $('nodeStatus').textContent = '未安装';
+                    $('nodeStatus').className = 'status stopped';
+                }
+            } catch (e) {
+                console.error('加载服务状态失败：', e);
+                $('masterStatus').textContent = '获取失败';
+                $('nodeStatus').textContent = '获取失败';
+            }
+        }
+
+        // 4. 查看日志
+        function viewLog() {
+            const logContainer = $('logContainer');
+            logContainer.style.display = logContainer.style.display === 'none' ? 'block' : 'none';
+            
+            if (logContainer.style.display === 'block') {
+                // 模拟加载日志（实际需后端接口实时返回）
+                $('logContent').innerHTML = `
+                    <div class="log-info">[2024-05-20 10:00:00] [INFO] GOST v3.0.0 启动成功</div>
+                    <div class="log-info">[2024-05-20 10:00:01] [INFO] gRPC监听 0.0.0.0:50051</div>
+                    <div class="log-success">[2024-05-20 10:00:02] [INFO] 面板监听 0.0.0.0:8080</div>
+                    <div class="log-info">[2024-05-20 10:00:03] [INFO] 认证密钥：**********</div>
+                `;
+            }
+        }
+
+        // 5. 绑定按钮事件
+        $('startMaster').addEventListener('click', async () => {
+            alert('已执行：启动主控端（实际需调用后端接口执行 systemctl start gost-master nginx）');
+            await loadServiceStatus();
+            updateRefreshTime();
+        });
+
+        $('stopMaster').addEventListener('click', async () => {
+            alert('已执行：停止主控端（实际需调用后端接口执行 systemctl stop gost-master nginx）');
+            await loadServiceStatus();
+            updateRefreshTime();
+        });
+
+        $('restartMaster').addEventListener('click', async () => {
+            alert('已执行：重启主控端（实际需调用后端接口执行 systemctl restart gost-master nginx）');
+            await loadServiceStatus();
+            updateRefreshTime();
+        });
+
+        $('viewStatus').addEventListener('click', async () => {
+            await loadServiceStatus();
+            await loadSystemInfo();
+            updateRefreshTime();
+            alert('状态已刷新！');
+        });
+
+        $('viewLog').addEventListener('click', viewLog);
+    </script>
+</body>
+</html>
